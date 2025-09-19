@@ -103,7 +103,7 @@ Sources → AI Extraction → Human Review → AI Generation → Quote Verificat
 ### Quick Start
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/article-drafting-mvp.git
+   git clone https://github.com/DinukaEk/Article-Drafting-MVP.git
    cd article-drafting-mvp
    ```
 
@@ -339,7 +339,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 For questions, issues, or feature requests:
-- Open a [GitHub Issue](https://github.com/yourusername/article-drafting-mvp/issues)
+- Open a [GitHub Issue](https://github.com/DinukaEk/Article-Drafting-MVP/issues)
 - Check existing issues for solutions
 - Provide detailed reproduction steps for bugs
 
