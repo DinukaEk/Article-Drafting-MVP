@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article Drafting MVP - HITL Review System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-panel {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8fafc;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab:hover:not(.active) {
+            background: #e2e8f0;
+        }
+
+        .tab-content {
+            padding: 2rem;
+            min-height: 600px;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 1rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #f8fafc;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e0e7ff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #64748b;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .file-list {
+            margin-top: 1.5rem;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .pdf-icon { background: #dc2626; }
+        .web-icon { background: #2563eb; }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-size {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .remove-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .remove-btn:hover {
+            background: #fecaca;
+            transform: scale(1.05);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8fafc;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+
+        .btn:disabled {
+            background: #d1d5db !important;
+            color: #9ca3af !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+
+        /* Key Points Review Section */
+        .key-points-review {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .review-title {
+            font-weight: 700;
+            color: #0c4a6e;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .key-point-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .key-point-item:hover {
+            border-color: #0ea5e9;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+        }
+
+        .key-point-item.approved {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .key-point-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            padding: 0.5rem;
+            color: #64748b;
+            font-size: 1.2rem;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .point-text {
+            flex: 1;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #334155;
+        }
+
+        .point-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .approve-btn {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .approve-btn:hover {
+            background: #bbf7d0;
+        }
+
+        .approve-btn.approved {
+            background: #10b981;
+            color: white;
+        }
+
+        .edit-btn {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .edit-btn:hover {
+            background: #fde68a;
+        }
+
+        .delete-btn {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .point-edit {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+
+        .point-source {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        /* Article Editor with Source Mapping */
+        .article-editor {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .editor-main {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        .editor-sidebar {
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .article-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .article-textarea {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            font-family: Georgia, serif;
+            font-size: 1rem;
+            line-height: 1.8;
+            resize: vertical;
+        }
+
+        .article-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Quote Checker */
+        .quote-checker {
+            background: white;
+            border: 2px solid #f59e0b;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .quote-checker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .checker-title {
+            font-weight: 700;
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quote-item {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .quote-text {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+            color: #92400e;
+        }
+
+        .quote-source {
+            font-size: 0.9rem;
+            color: #78716c;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .quote-status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        .quote-verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .quote-partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .quote-unverified {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Source mapping highlights */
+        .source-highlight {
+            background-color: rgba(102, 126, 234, 0.1);
+            border-bottom: 2px dotted #667eea;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .source-tooltip {
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            max-width: 300px;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .source-tooltip.show {
+            display: block;
+        }
+
+        /* Story Direction Controls */
+        .story-direction {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .direction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .direction-control {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .prompt-editor {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            height: 120px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: system-ui;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        /* Export options */
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .export-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .export-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .export-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .export-desc {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        /* Loading and Status */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            text-align: center;
+            background: white;
+            padding: 3rem 2rem;
+            border-radius: 1rem;
+            max-width: 400px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-ready { background: #fef3c7; color: #92400e; }
+        .status-processing { background: #dbeafe; color: #1e40af; }
+        .status-success { background: #dcfce7; color: #166534; }
+        .status-error { background: #fee2e2; color: #dc2626; }
+
+        @media (max-width: 1024px) {
+            .article-editor {
+                grid-template-columns: 1fr;
+            }
+            
+            .editor-sidebar {
+                order: -1;
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .direction-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 Article Drafting MVP</h1>
+            <p>Transform interviews into compelling articles with human-in-the-loop review</p>
+        </div>
+
+        <div class="main-panel">
+            <div class="tabs">
+                <div class="tab active" data-tab="upload" onclick="switchTab('upload')">
+                    📤 Upload Sources
+                </div>
+                <div class="tab" data-tab="review" onclick="switchTab('review')">
+                    ✅ Review Points
+                </div>
+                <div class="tab" data-tab="generate" onclick="switchTab('generate')">
+                    ✨ Generate Draft
+                </div>
+                <div class="tab" data-tab="export" onclick="switchTab('export')">
+                    💾 Export
+                </div>
+            </div>
+
+            <div class="tab-content">
+                <!-- Upload Tab -->
+                <div id="upload-panel" class="tab-panel active">
+                    <div class="section-title">
+                        📋 Upload Interview Content & Sources
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Project Name *</label>
+                        <input type="text" class="form-input" id="project-name" 
+                               placeholder="Enter project/company name">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Interview Transcript *</label>
+                        <textarea class="form-textarea" id="transcript-input" rows="10" 
+                                  placeholder="Paste your interview transcript here..."></textarea>
+                        
+                        <div class="upload-area" onclick="document.getElementById('transcript-file').click()" 
+                             ondrop="handleDrop(event, 'transcript')" ondragover="handleDragOver(event)" 
+                             ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)">
+                            <div class="upload-icon">📄</div>
+                            <div class="upload-text">Or Upload Transcript File</div>
+                            <div class="upload-hint">TXT, PDF, DOCX supported</div>
+                            <input type="file" id="transcript-file" accept=".txt,.pdf,.docx" style="display: none;" onchange="handleFileUpload(event, 'transcript')">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Supporting Documents *</label>
+                        <div class="upload-area" onclick="document.getElementById('pdf-files').click()"
+                             ondrop="handleDrop(event, 'pdf')" ondragover="handleDragOver(event)"
+                             ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)">
+                            <div class="upload-icon">📊</div>
+                            <div class="upload-text">Upload Brochures/PDFs</div>
+                            <div class="upload-hint">Company brochures, fact sheets, etc.</div>
+                            <input type="file" id="pdf-files" accept=".pdf" multiple style="display: none;" onchange="handleFileUpload(event, 'pdf')">
+                        </div>
+                        <div id="pdf-list" class="file-list"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Web Sources</label>
+                        <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                            <input type="url" class="form-input" id="url-input" style="flex: 1;"
+                                   placeholder="YouTube videos, company website, news articles...">
+                            <button class="btn btn-secondary" onclick="addUrl()">Add URL</button>
+                        </div>
+                        <div id="url-list" class="file-list"></div>
+                    </div>
+
+                    <div class="btn-group">
+                        <div></div>
+                        <button class="btn btn-primary" onclick="extractKeyPoints()" id="extract-btn">
+                            Extract Key Points →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Review Tab -->
+                <div id="review-panel" class="tab-panel">
+                    <div class="section-title">
+                        ✅ Review & Approve Key Points
+                    </div>
+
+                    <div class="key-points-review">
+                        <div class="review-header">
+                            <div class="review-title">
+                                🔍 Extracted Key Points
+                            </div>
+                            <button class="btn btn-secondary" onclick="extractKeyPoints()" style="padding: 0.5rem 1rem;">
+                                🔄 Re-extract
+                            </button>
+                        </div>
+                        <div id="key-points-container">
+                            <p style="color: #64748b; text-align: center; padding: 2rem;">
+                                No key points extracted yet. Please upload sources and click "Extract Key Points".
+                            </p>
+                        </div>
+                        <div style="margin-top: 1rem; text-align: right;">
+                            <span id="approved-count" style="color: #10b981; font-weight: 600;">0 approved</span>
+                            <span style="color: #64748b;"> / </span>
+                            <span id="total-count" style="color: #64748b;">0 total</span>
+                        </div>
+                    </div>
+
+                    <div class="story-direction">
+                        <div class="review-title" style="margin-bottom: 1rem;">
+                            🎯 Story Direction & Settings
+                        </div>
+                        
+                        <div class="direction-grid">
+                            <div class="direction-control">
+                                <label class="form-label">Article Style</label>
+                                <select class="form-select" id="article-style">
+                                    <option value="news">News Article</option>
+                                    <option value="feature" selected>Feature Story</option>
+                                    <option value="profile">Company Profile</option>
+                                    <option value="interview">Interview Summary</option>
+                                </select>
+                            </div>
+
+                            <div class="direction-control">
+                                <label class="form-label">Length Target</label>
+                                <select class="form-select" id="article-length">
+                                    <option value="short">Short (400-600 words)</option>
+                                    <option value="medium" selected>Medium (600-1000 words)</option>
+                                    <option value="long">Long (1000+ words)</option>
+                                </select>
+                            </div>
+
+                            <div class="direction-control">
+                                <label class="form-label">Tone/Angle</label>
+                                <select class="form-select" id="article-tone">
+                                    <option value="professional" selected>Professional</option>
+                                    <option value="conversational">Conversational</option>
+                                    <option value="analytical">Analytical</option>
+                                    <option value="promotional">Promotional</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="prompt-editor">
+                            <label class="form-label">Custom Instructions</label>
+                            <textarea class="prompt-textarea" id="custom-prompt" 
+                                      placeholder="Additional instructions for the AI writer..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="switchTab('upload')">← Back</button>
+                        <button class="btn btn-primary" onclick="generateArticle()" id="generate-btn" disabled>
+                            Generate Article →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Generate Tab -->
+                <div id="generate-panel" class="tab-panel">
+                    <div class="section-title">
+                        ✨ Generated Article with Source Mapping
+                    </div>
+
+                    <div class="status-bar">
+                        <div class="status-indicator status-ready" id="generation-status">
+                            ⏳ Ready to generate
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary" onclick="runQuoteChecker()" id="quote-check-btn" style="margin-right: 0.5rem;">
+                                🔍 Check Quotes
+                            </button>
+                            <button class="btn btn-secondary" onclick="generateArticle()">
+                                🔄 Regenerate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="quote-checker-results" class="quote-checker" style="display: none;">
+                        <div class="quote-checker-header">
+                            <div class="checker-title">
+                                🔍 Quote Verification Results
+                            </div>
+                        </div>
+                        <div id="quote-results-container"></div>
+                    </div>
+
+                    <div class="article-editor">
+                        <div class="editor-main">
+                            <div class="article-header">
+                                <h3 style="margin: 0; color: #1e293b;">Article Draft</h3>
+                                <div style="font-size: 0.9rem; color: #64748b;" id="word-count">0 words</div>
+                            </div>
+                            <textarea class="article-textarea" id="article-content" 
+                                      placeholder="Your generated article will appear here..."></textarea>
+                        </div>
+                        
+                        <div class="editor-sidebar">
+                            <h4 style="margin-bottom: 1rem; color: #1e293b;">Source References</h4>
+                            <div id="source-references">
+                                <p style="color: #64748b; font-size: 0.9rem;">
+                                    Hover over highlighted text in the article to see source references.
+                                </p>
+                            </div>
+                            
+                            <h4 style="margin: 2rem 0 1rem; color: #1e293b;">Used Key Points</h4>
+                            <div id="used-points">
+                                <p style="color: #64748b; font-size: 0.9rem;">
+                                    Key points referenced in the article will appear here.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="switchTab('review')">← Review</button>
+                        <button class="btn btn-primary" onclick="switchTab('export')" id="export-ready-btn" disabled>
+                            Ready to Export →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export Tab -->
+                <div id="export-panel" class="tab-panel">
+                    <div class="section-title">
+                        💾 Export Article & Provenance
+                    </div>
+
+                    <div class="export-grid">
+                        <div class="export-card" onclick="exportFile('markdown')">
+                            <div class="export-icon">📝</div>
+                            <div class="export-title">Markdown</div>
+                            <div class="export-desc">Blog-ready format</div>
+                        </div>
+
+                        <div class="export-card" onclick="exportFile('html')">
+                            <div class="export-icon">🌐</div>
+                            <div class="export-title">HTML</div>
+                            <div class="export-desc">Web-ready format</div>
+                        </div>
+
+                        <div class="export-card" onclick="exportFile('pdf')">
+                            <div class="export-icon">📄</div>
+                            <div class="export-title">PDF</div>
+                            <div class="export-desc">Professional document</div>
+                        </div>
+
+                        <!-- <div class="export-card" onclick="exportFile('word')">
+                            <div class="export-icon">📄</div>
+                            <div class="export-title">Word</div>
+                            <div class="export-desc">DOCX format</div>
+                        </div> -->
+
+                        <div class="export-card" onclick="exportFile('json')">
+                            <div class="export-icon">📊</div>
+                            <div class="export-title">Provenance JSON</div>
+                            <div class="export-desc">Source mapping data</div>
+                        </div>
+
+                        <div class="export-card" onclick="copyToClipboard()">
+                            <div class="export-icon">📋</div>
+                            <div class="export-title">Copy Text</div>
+                            <div class="export-desc">Copy to clipboard</div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="startNew()">🆕 New Project</button>
+                        <button class="btn btn-primary" onclick="switchTab('generate')">← Back to Edit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application state
+        let appData = {
+            projectName: '',
+            transcript: '',
+            pdfFiles: [],
+            urls: [],
+            keyPoints: [],
+            approvedPoints: [],
+            generatedArticle: '',
+            sourceMapping: {},
+            quotes: []
+        };
+
+        // AI API Configuration
+        const AI_CONFIG = {
+            provider: 'GROQ',
+            key: '', // Should add the API key
+            url: 'https://api.groq.com/openai/v1/chat/completions',
+            model: 'mixtral-8x7b-32768'
+
+            // provider: 'OPENAI',
+            // key: '', // Should add the API key
+            // url: 'https://api.openai.com/v1/chat/completions',
+            // model: 'gpt-3.5-turbo'
+
+            // provider: 'ANTHROPIC',
+            // key: '', // Should add the API key
+            // url: 'https://api.anthropic.com/v1/messages',
+            // model: 'claude-3-haiku-20240307'
+        };
+
+        // Step 3: Extract key points automatically
+        async function extractKeyPoints() {
+            if (!validateSources()) return;
+            
+            try {
+                showLoading('Extracting key points from sources...');
+                updateStatus('processing', 'Analyzing content...');
+
+                // Prepare content for analysis
+                let allContent = `PROJECT: ${appData.projectName}\n\n`;
+                allContent += `INTERVIEW TRANSCRIPT:\n${appData.transcript}\n\n`;
+                
+                // Add PDF content
+                appData.pdfFiles.forEach(pdf => {
+                    if (pdf.extractedText) {
+                        allContent += `DOCUMENT: ${pdf.name}\n${pdf.extractedText}\n\n`;
+                    }
+                });
+                
+                // Add web sources
+                appData.urls.forEach(url => {
+                    allContent += `WEB SOURCE: ${url.title}\nURL: ${url.url}\n`;
+                    if (url.extractedContent) {
+                        allContent += `CONTENT: ${url.extractedContent}\n\n`;
+                    }
+                });
+
+                const keyPoints = await extractKeyPointsWithAI(allContent);
+                
+                appData.keyPoints = keyPoints;
+                displayKeyPointsForReview(keyPoints);
+                
+                hideLoading();
+                updateStatus('success', 'Key points extracted successfully!');
+                switchTab('review');
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Key point extraction failed:', error);
+                
+                // Fallback to offline extraction
+                const offlinePoints = extractKeyPointsOffline();
+                appData.keyPoints = offlinePoints;
+                displayKeyPointsForReview(offlinePoints);
+                
+                updateStatus('success', 'Key points extracted using offline analysis!');
+                switchTab('review');
+            }
+        }
+
+        // AI-powered key point extraction
+        async function extractKeyPointsWithAI(content) {
+            const prompt = `Extract the most important and newsworthy key points from this content. Focus on facts, quotes, achievements, and insights that would be valuable for an article.
+
+CONTENT:
+${content.substring(0, 10000)}
+
+Return a JSON array of key points, each with this structure:
+{
+    "text": "The key point text",
+    "source": "Which source this came from (transcript/document name/url)",
+    "type": "quote|fact|achievement|insight",
+    "importance": 1-5
+}
+
+Return only the JSON array, no other text.`;
+
+            try {
+                const response = await callAI([
+                    {
+                        role: "system",
+                        content: "You are a professional editor extracting key points for article writing. Focus on accuracy and newsworthiness."
+                    },
+                    {
+                        role: "user", 
+                        content: prompt
+                    }
+                ], 0.3);
+
+                const cleanedResponse = response.trim().replace(/```json\s*|\s*```/g, '');
+                const points = JSON.parse(cleanedResponse);
+                
+                return points.sort((a, b) => b.importance - a.importance).slice(0, 12);
+                
+            } catch (error) {
+                throw new Error('AI extraction failed: ' + error.message);
+            }
+        }
+
+        // Offline key point extraction fallback
+        function extractKeyPointsOffline() {
+            const points = [];
+            const content = appData.transcript;
+            
+            // Extract quotes (sentences in quotes or meaningful statements)
+            const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 30);
+            const quotes = sentences
+                .filter(s => s.includes('"') || s.length > 50)
+                .filter(s => !s.toLowerCase().includes('interviewer'))
+                .slice(0, 4)
+                .map(quote => ({
+                    text: quote.trim(),
+                    source: 'Interview Transcript',
+                    type: 'quote',
+                    importance: 4
+                }));
+
+            // Extract achievements and facts
+            const achievements = sentences
+                .filter(s => /\b(achieve|accomplish|launch|grow|increase|success|build|create|develop|establish)\b/i.test(s))
+                .slice(0, 4)
+                .map(fact => ({
+                    text: fact.trim(),
+                    source: 'Interview Transcript',
+                    type: 'achievement',
+                    importance: 3
+                }));
+
+            // Extract business insights
+            const insights = sentences
+                .filter(s => /\b(strategy|vision|future|plan|goal|approach|focus|believe)\b/i.test(s))
+                .slice(0, 4)
+                .map(insight => ({
+                    text: insight.trim(),
+                    source: 'Interview Transcript',
+                    type: 'insight',
+                    importance: 3
+                }));
+
+            points.push(...quotes, ...achievements, ...insights);
+            return points.slice(0, 12);
+        }
+
+        // Step 3 continued: Display key points for review
+        function displayKeyPointsForReview(keyPoints) {
+            const container = document.getElementById('key-points-container');
+            
+            container.innerHTML = keyPoints.map((point, index) => `
+                <div class="key-point-item" id="point-${index}" draggable="true" 
+                     ondragstart="handleDragStart(event, ${index})" 
+                     ondragover="handleDragOver(event)" 
+                     ondrop="handleDrop(event, ${index})">
+                    <div class="key-point-content">
+                        <div class="drag-handle">⋮⋮</div>
+                        <div class="point-text" id="point-text-${index}">${point.text}</div>
+                        <div class="point-actions">
+                            <button class="action-btn approve-btn" onclick="toggleApproval(${index})" id="approve-${index}">
+                                ✓ Approve
+                            </button>
+                            <button class="action-btn edit-btn" onclick="editPoint(${index})">
+                                ✏️ Edit
+                            </button>
+                            <button class="action-btn delete-btn" onclick="deletePoint(${index})">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="point-source">Source: ${point.source} | Type: ${point.type}</div>
+                    <textarea class="point-edit" id="edit-${index}" style="display: none;" 
+                              onblur="saveEdit(${index})" onkeydown="handleEditKeydown(event, ${index})">${point.text}</textarea>
+                </div>
+            `).join('');
+            
+            updatePointCounts();
+            enableGenerateButton();
+        }
+
+        // Key point management functions
+        function toggleApproval(index) {
+            const point = appData.keyPoints[index];
+            const button = document.getElementById(`approve-${index}`);
+            const item = document.getElementById(`point-${index}`);
+            
+            if (appData.approvedPoints.includes(index)) {
+                // Remove approval
+                appData.approvedPoints = appData.approvedPoints.filter(i => i !== index);
+                button.textContent = '✓ Approve';
+                button.classList.remove('approved');
+                item.classList.remove('approved');
+            } else {
+                // Add approval
+                appData.approvedPoints.push(index);
+                button.textContent = '✓ Approved';
+                button.classList.add('approved');
+                item.classList.add('approved');
+            }
+            
+            updatePointCounts();
+            enableGenerateButton();
+        }
+
+        function editPoint(index) {
+            const textDiv = document.getElementById(`point-text-${index}`);
+            const editTextarea = document.getElementById(`edit-${index}`);
+            
+            textDiv.style.display = 'none';
+            editTextarea.style.display = 'block';
+            editTextarea.focus();
+            editTextarea.select();
+        }
+
+        function saveEdit(index) {
+            const textDiv = document.getElementById(`point-text-${index}`);
+            const editTextarea = document.getElementById(`edit-${index}`);
+            
+            appData.keyPoints[index].text = editTextarea.value;
+            textDiv.textContent = editTextarea.value;
+            
+            textDiv.style.display = 'block';
+            editTextarea.style.display = 'none';
+        }
+
+        function handleEditKeydown(event, index) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                saveEdit(index);
+            }
+        }
+
+        function deletePoint(index) {
+            if (confirm('Delete this key point?')) {
+                appData.keyPoints.splice(index, 1);
+                appData.approvedPoints = appData.approvedPoints
+                    .filter(i => i !== index)
+                    .map(i => i > index ? i - 1 : i);
+                displayKeyPointsForReview(appData.keyPoints);
+            }
+        }
+
+        function updatePointCounts() {
+            document.getElementById('approved-count').textContent = appData.approvedPoints.length + ' approved';
+            document.getElementById('total-count').textContent = appData.keyPoints.length + ' total';
+        }
+
+        function enableGenerateButton() {
+            const generateBtn = document.getElementById('generate-btn');
+            generateBtn.disabled = appData.approvedPoints.length === 0;
+        }
+
+        // Drag and drop for reordering
+        let draggedIndex = null;
+
+        function handleDragStart(event, index) {
+            draggedIndex = index;
+            event.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDrop(event, targetIndex) {
+            event.preventDefault();
+            
+            if (draggedIndex !== null && draggedIndex !== targetIndex) {
+                const draggedItem = appData.keyPoints[draggedIndex];
+                appData.keyPoints.splice(draggedIndex, 1);
+                appData.keyPoints.splice(targetIndex, 0, draggedItem);
+                
+                // Update approved points indices
+                appData.approvedPoints = appData.approvedPoints.map(i => {
+                    if (i === draggedIndex) return targetIndex;
+                    if (i < draggedIndex && i >= targetIndex) return i + 1;
+                    if (i > draggedIndex && i <= targetIndex) return i - 1;
+                    return i;
+                });
+                
+                displayKeyPointsForReview(appData.keyPoints);
+            }
+            
+            draggedIndex = null;
+        }
+
+        // Step 5: Generate article with approved points
+        async function generateArticle() {
+            if (appData.approvedPoints.length === 0) {
+                alert('Please approve at least one key point before generating the article.');
+                return;
+            }
+            
+            try {
+                showLoading('Generating article with source mapping...');
+                updateStatus('processing', 'Creating article draft...');
+
+                const approvedPoints = appData.approvedPoints.map(i => appData.keyPoints[i]);
+                const settings = {
+                    style: document.getElementById('article-style').value,
+                    length: document.getElementById('article-length').value,
+                    tone: document.getElementById('article-tone').value,
+                    customPrompt: document.getElementById('custom-prompt').value
+                };
+
+                const article = await generateArticleWithAI(approvedPoints, settings);
+                
+                appData.generatedArticle = article;
+                document.getElementById('article-content').value = article;
+                
+                // Create source mapping
+                createSourceMapping(article, approvedPoints);
+                
+                // Update UI
+                updateWordCount();
+                updateUsedPoints(approvedPoints);
+                
+                hideLoading();
+                updateStatus('success', 'Article generated with source mapping!');
+                document.getElementById('export-ready-btn').disabled = false;
+                document.getElementById('quote-check-btn').disabled = false;
+                
+                switchTab('generate');
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Article generation failed:', error);
+                
+                // Fallback generation
+                const fallbackArticle = generateArticleOffline();
+                appData.generatedArticle = fallbackArticle;
+                document.getElementById('article-content').value = fallbackArticle;
+                updateWordCount();
+                
+                updateStatus('success', 'Article generated using offline method!');
+                document.getElementById('export-ready-btn').disabled = false;
+                switchTab('generate');
+            }
+        }
+
+        // AI-powered article generation
+        async function generateArticleWithAI(approvedPoints, settings) {
+            const pointsText = approvedPoints.map(p => `- ${p.text} (${p.source})`).join('\n');
+            
+            const prompt = `Write a ${settings.length} ${settings.style} article about ${appData.projectName} using ONLY these approved key points:
+
+APPROVED KEY POINTS:
+${pointsText}
+
+ORIGINAL SOURCES:
+Transcript: ${appData.transcript.substring(0, 3000)}
+
+ARTICLE REQUIREMENTS:
+- Style: ${settings.style}
+- Length: ${getWordTarget(settings.length)} words
+- Tone: ${settings.tone}
+${settings.customPrompt ? `- Custom: ${settings.customPrompt}` : ''}
+
+IMPORTANT:
+1. Use ONLY the approved key points and original sources
+2. Include direct quotes where appropriate
+3. Reference specific points naturally in the article
+4. Create engaging headlines and structure
+5. Use markdown formatting
+6. Ensure all claims can be traced to the provided sources
+
+Write the complete article now:`;
+
+            try {
+                const response = await callAI([
+                    {
+                        role: "system",
+                        content: "You are a professional journalist. Write engaging articles using only provided source material. Use markdown formatting."
+                    },
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ], 0.7);
+
+                return response.trim();
+                
+            } catch (error) {
+                throw new Error('AI generation failed: ' + error.message);
+            }
+        }
+
+        // Step 6: Create source mapping
+        function createSourceMapping(article, approvedPoints) {
+            const mapping = {};
+            const paragraphs = article.split('\n\n');
+            
+            paragraphs.forEach((paragraph, pIndex) => {
+                approvedPoints.forEach((point, pointIndex) => {
+                    // Simple keyword matching for source mapping
+                    const keywords = point.text.split(' ').filter(w => w.length > 4).slice(0, 3);
+                    const hasKeywords = keywords.some(keyword => 
+                        paragraph.toLowerCase().includes(keyword.toLowerCase())
+                    );
+                    
+                    if (hasKeywords) {
+                        if (!mapping[pIndex]) mapping[pIndex] = [];
+                        mapping[pIndex].push({
+                            point: point.text,
+                            source: point.source,
+                            type: point.type
+                        });
+                    }
+                });
+            });
+            
+            appData.sourceMapping = mapping;
+            highlightSourceMappedText();
+        }
+
+        // Step 6 continued: Highlight text with source mapping
+        function highlightSourceMappedText() {
+            const textarea = document.getElementById('article-content');
+            const article = textarea.value;
+            const paragraphs = article.split('\n\n');
+            
+            // Update source references sidebar
+            const sourceRefs = document.getElementById('source-references');
+            let refsHTML = '';
+            
+            Object.keys(appData.sourceMapping).forEach(pIndex => {
+                const sources = appData.sourceMapping[pIndex];
+                refsHTML += `<div style="margin-bottom: 1rem; padding: 0.75rem; background: white; border-radius: 0.5rem; border-left: 3px solid #667eea;">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Paragraph ${parseInt(pIndex) + 1}</div>`;
+                
+                sources.forEach(source => {
+                    refsHTML += `<div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.25rem;">
+                        ${source.source} (${source.type})
+                    </div>`;
+                });
+                
+                refsHTML += '</div>';
+            });
+            
+            sourceRefs.innerHTML = refsHTML || '<p style="color: #64748b; font-size: 0.9rem;">No source mappings detected.</p>';
+        }
+
+        // Step 7: Quote checker
+        async function runQuoteChecker() {
+            showLoading('Checking quotes against sources...');
+            
+            try {
+                const article = document.getElementById('article-content').value;
+                const quotes = extractQuotesFromArticle(article);
+                const verifiedQuotes = await verifyQuotes(quotes);
+                
+                displayQuoteResults(verifiedQuotes);
+                
+                hideLoading();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Quote checking failed:', error);
+                alert('Quote checking failed. Please verify quotes manually.');
+            }
+        }
+
+        function extractQuotesFromArticle(article) {
+            const quotes = [];
+            const quoteRegex = /"([^"]+)"/g;
+            let match;
+            
+            while ((match = quoteRegex.exec(article)) !== null) {
+                quotes.push({
+                    text: match[1],
+                    position: match.index,
+                    fullMatch: match[0]
+                });
+            }
+            
+            return quotes;
+        }
+
+        async function verifyQuotes(quotes) {
+            const allSources = appData.transcript + ' ' + 
+                appData.pdfFiles.map(pdf => pdf.extractedText || '').join(' ');
+            
+            const verifiedQuotes = quotes.map(quote => {
+                const exactMatch = allSources.includes(quote.text);
+                const partialMatch = quote.text.split(' ').length > 3 && 
+                    quote.text.split(' ').some(word => 
+                        word.length > 4 && allSources.toLowerCase().includes(word.toLowerCase())
+                    );
+                
+                let status = 'unverified';
+                let sourceSnippet = '';
+                
+                if (exactMatch) {
+                    status = 'verified';
+                    const index = allSources.indexOf(quote.text);
+                    sourceSnippet = allSources.substring(Math.max(0, index - 100), index + quote.text.length + 100);
+                } else if (partialMatch) {
+                    status = 'partial';
+                    sourceSnippet = 'Similar content found in sources (not exact match)';
+                }
+                
+                return {
+                    ...quote,
+                    status,
+                    sourceSnippet
+                };
+            });
+            
+            return verifiedQuotes;
+        }
+
+        function displayQuoteResults(quotes) {
+            const container = document.getElementById('quote-results-container');
+            const checker = document.getElementById('quote-checker-results');
+            
+            if (quotes.length === 0) {
+                container.innerHTML = '<p style="color: #64748b;">No quotes found in the article.</p>';
+                checker.style.display = 'block';
+                return;
+            }
+            
+            container.innerHTML = quotes.map(quote => `
+                <div class="quote-item">
+                    <div class="quote-text">"${quote.text}"</div>
+                    <span class="quote-status quote-${quote.status}">
+                        ${quote.status === 'verified' ? '✓ Verified' : 
+                          quote.status === 'partial' ? '⚠ Partial Match' : '❌ Unverified'}
+                    </span>
+                    <div class="quote-source">
+                        ${quote.sourceSnippet || 'No matching source found'}
+                    </div>
+                </div>
+            `).join('');
+            
+            checker.style.display = 'block';
+        }
+
+        function updateUsedPoints(approvedPoints) {
+            const container = document.getElementById('used-points');
+            container.innerHTML = approvedPoints.map(point => `
+                <div style="margin-bottom: 0.75rem; padding: 0.5rem; background: white; border-radius: 0.25rem; border-left: 3px solid #10b981;">
+                    <div style="font-size: 0.85rem; color: #166534;">${point.text.substring(0, 100)}${point.text.length > 100 ? '...' : ''}</div>
+                    <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.25rem;">${point.source}</div>
+                </div>
+            `).join('');
+        }
+
+        // File handling functions
+        async function readTranscriptFile(file) {
+            try {
+                showLoading(`Reading ${file.name}...`);
+                
+                let extractedText = '';
+                
+                if (file.type === 'application/pdf') {
+                    extractedText = await extractTextFromPDF(file);
+                } else if (file.name.endsWith('.docx')) {
+                    extractedText = await extractTextFromDOCX(file);
+                } else {
+                    extractedText = await readTextFile(file);
+                }
+                
+                document.getElementById('transcript-input').value = extractedText;
+                appData.transcript = extractedText;
+                validateSources();
+                hideLoading();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('File reading error:', error);
+                alert(`Error reading file: ${error.message}`);
+            }
+        }
+
+        async function extractTextFromPDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let fullText = '';
+            
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n';
+            }
+            
+            return fullText.replace(/\s+/g, ' ').trim();
+        }
+
+        async function extractTextFromDOCX(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer });
+            return result.value.trim();
+        }
+
+        async function readTextFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+
+        async function addPdfFile(file) {
+            try {
+                showLoading('Processing PDF...');
+                
+                let extractedText = null;
+                try {
+                    extractedText = await extractTextFromPDF(file);
+                } catch (error) {
+                    console.warn('PDF text extraction failed:', error);
+                }
+                
+                appData.pdfFiles.push({
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    file: file,
+                    extractedText: extractedText
+                });
+                
+                renderFileList();
+                hideLoading();
+                
+            } catch (error) {
+                hideLoading();
+                console.error('PDF processing error:', error);
+                alert(`Error processing PDF: ${error.message}`);
+            }
+        }
+
+        async function addUrl() {
+            const urlInput = document.getElementById('url-input');
+            const url = urlInput.value.trim();
+            
+            if (url && isValidUrl(url)) {
+                appData.urls.push({
+                    url: url,
+                    title: extractDomain(url),
+                    type: getUrlType(url),
+                    extractedContent: 'URL reference added'
+                });
+                
+                renderFileList();
+                urlInput.value = '';
+            }
+        }
+
+        // Export functions
+        function exportFile(format) {
+            const content = document.getElementById('article-content').value;
+            const projectName = appData.projectName.replace(/\s+/g, '-').toLowerCase();
+            
+            switch (format) {
+                case 'markdown':
+                    downloadFile(content, `${projectName}-article.md`, 'text/markdown');
+                    break;
+                case 'html':
+                    const htmlContent = createHtmlDocument(content);
+                    downloadFile(htmlContent, `${projectName}-article.html`, 'text/html');
+                    break;
+                case 'pdf':
+                    exportToPDF(content, projectName);
+                    break;
+                case 'word':
+                    const wordContent = createWordDocument(content);
+                    downloadFile(wordContent, `${projectName}-article.html`, 'text/html');
+                    break;
+                case 'json':
+                    const provenanceData = createProvenanceJSON();
+                    downloadFile(JSON.stringify(provenanceData, null, 2), `${projectName}-provenance.json`, 'application/json');
+                    break;
+            }
+        }
+
+        function createProvenanceJSON() {
+            return {
+                project: appData.projectName,
+                generated: new Date().toISOString(),
+                sources: {
+                    transcript: 'Interview Transcript',
+                    pdfs: appData.pdfFiles.map(pdf => pdf.name),
+                    urls: appData.urls.map(url => url.url)
+                },
+                keyPoints: appData.keyPoints,
+                approvedPoints: appData.approvedPoints.map(i => appData.keyPoints[i]),
+                sourceMapping: appData.sourceMapping,
+                article: appData.generatedArticle,
+                quotes: appData.quotes || []
+            };
+        }
+
+        // Utility functions
+        async function callAI(messages, temperature = 0.7) {
+            const response = await fetch(AI_CONFIG.url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${AI_CONFIG.key}`
+                },
+                body: JSON.stringify({
+                    model: AI_CONFIG.model,
+                    messages: messages,
+                    temperature: temperature,
+                    max_tokens: 4000
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        function validateSources() {
+            const projectName = document.getElementById('project-name').value.trim();
+            const transcript = document.getElementById('transcript-input').value.trim();
+            
+            appData.projectName = projectName;
+            appData.transcript = transcript;
+            
+            const hasMinimumSources = projectName && transcript && transcript.length > 100 && 
+                (appData.pdfFiles.length > 0 || appData.urls.length > 0);
+            
+            // document.getElementById('extract-btn').disabled = !hasMinimumSources;
+            return hasMinimumSources;
+        }
+
+        function generateArticleOffline() {
+            const approvedPoints = appData.approvedPoints.map(i => appData.keyPoints[i]);
+            const settings = {
+                style: document.getElementById('article-style').value,
+                length: document.getElementById('article-length').value,
+                tone: document.getElementById('article-tone').value
+            };
+
+            let article = `# ${appData.projectName}: Innovation and Excellence in Focus\n\n`;
+            
+            article += `${appData.projectName} demonstrates significant achievements and strategic vision, as revealed through comprehensive analysis of recent interviews and supporting materials.\n\n`;
+            
+            // Add approved points as sections
+            approvedPoints.forEach((point, index) => {
+                if (index === 0) {
+                    article += `## Key Insights and Developments\n\n`;
+                }
+                
+                if (point.type === 'quote') {
+                    article += `"${point.text}"\n\n`;
+                    article += `This perspective from company leadership highlights their commitment to excellence and innovation.\n\n`;
+                } else {
+                    article += `${point.text} This development reflects ${appData.projectName}'s strategic approach to growth and market positioning.\n\n`;
+                }
+            });
+            
+            article += `## Looking Forward\n\n`;
+            article += `${appData.projectName} continues to build on these foundations, positioning for sustained growth and continued innovation in their market sector.\n\n`;
+            
+            return article;
+        }
+
+        function createHtmlDocument(content) {
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>${appData.projectName} - Article</title>
+    <style>
+        body { 
+            font-family: Georgia, serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
+            line-height: 1.8; 
+            color: #333; 
+        }
+        h1 { 
+            color: #2c3e50; 
+            border-bottom: 3px solid #3498db; 
+            padding-bottom: 10px; 
+        }
+        h2 { 
+            color: #34495e; 
+            margin-top: 40px; 
+        }
+        blockquote { 
+            border-left: 4px solid #3498db; 
+            margin: 20px 0; 
+            padding-left: 20px; 
+            font-style: italic; 
+        }
+        .meta { 
+            text-align: center; 
+            color: #777; 
+            font-size: 0.9em; 
+            margin: 30px 0; 
+            padding: 20px 0; 
+            border-top: 1px solid #eee; 
+        }
+    </style>
+</head>
+<body>
+    ${markdownToHtml(content)}
+    <div class="meta">
+        Generated on ${new Date().toLocaleDateString()} | ${appData.projectName}
+    </div>
+</body>
+</html>`;
+        }
+
+        function createWordDocument(content) {
+            return createHtmlDocument(content);
+        }
+
+        function markdownToHtml(markdown) {
+            return markdown
+                .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+                .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/^(.+)$/gm, '<p>$1</p>')
+                .replace(/<p><h/g, '<h')
+                .replace(/<\/h([123])><\/p>/g, '</h$1>')
+                .replace(/<p><blockquote>/g, '<blockquote>')
+                .replace(/<\/blockquote><\/p>/g, '</blockquote>')
+                .replace(/<p><\/p>/g, '');
+        }
+
+        function exportToPDF(content, projectName) {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                const plainText = markdownToPlainText(content);
+                
+                doc.setFontSize(16);
+                doc.setFont(undefined, 'bold');
+                doc.text(`${appData.projectName} - Article`, 20, 20);
+                
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.text(`Generated on ${new Date().toLocaleDateString()}`, 20, 30);
+                
+                doc.setFontSize(12);
+                const lines = doc.splitTextToSize(plainText, 170);
+                let yPosition = 45;
+                
+                lines.forEach(line => {
+                    if (yPosition > 280) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    doc.text(line, 20, yPosition);
+                    yPosition += 6;
+                });
+                
+                doc.save(`${projectName}-article.pdf`);
+                
+            } catch (error) {
+                console.error('PDF export error:', error);
+                alert('PDF export failed. Please try HTML export instead.');
+            }
+        }
+
+        function markdownToPlainText(markdown) {
+            return markdown
+                .replace(/^#{1,6}\s+(.+)$/gm, '$1\n')
+                .replace(/\*\*(.+?)\*\*/g, '$1')
+                .replace(/\*(.+?)\*/g, '$1')
+                .replace(/^> (.+)$/gm, '$1')
+                .replace(/\[(.+?)\]\((.+?)\)/g, '$1 ($2)')
+                .replace(/^---+$/gm, '')
+                .replace(/\n{3,}/g, '\n\n');
+        }
+
+        function copyToClipboard() {
+            const content = document.getElementById('article-content').value;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Article copied to clipboard!');
+            }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = content;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Article copied to clipboard!');
+            });
+        }
+
+        function downloadFile(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // UI Helper functions
+        function showLoading(message) {
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = `
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <h3>${message}</h3>
+                    <p>Please wait...</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoading() {
+            const overlay = document.querySelector('.loading-overlay');
+            if (overlay) overlay.remove();
+        }
+
+        function updateStatus(type, message) {
+            const status = document.getElementById('generation-status');
+            status.className = `status-indicator status-${type}`;
+            
+            const icons = {
+                ready: '⏳',
+                processing: '🔄',
+                success: '✅',
+                error: '❌'
+            };
+            
+            status.innerHTML = `${icons[type]} ${message}`;
+        }
+
+        function updateWordCount() {
+            const content = document.getElementById('article-content').value;
+            const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+            document.getElementById('word-count').textContent = `${wordCount} words`;
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-panel`).classList.add('active');
+        }
+
+        function startNew() {
+            if (confirm('Start a new project? All current work will be lost.')) {
+                location.reload();
+            }
+        }
+
+        // File handling
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
+
+        function handleDragEnter(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(event, type) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = Array.from(event.dataTransfer.files);
+            if (type === 'transcript' && files[0]) {
+                readTranscriptFile(files[0]);
+            } else if (type === 'pdf') {
+                files.forEach(file => {
+                    if (file.type === 'application/pdf') {
+                        addPdfFile(file);
+                    }
+                });
+            }
+        }
+
+        function handleFileUpload(event, type) {
+            const files = Array.from(event.target.files);
+            if (type === 'transcript' && files[0]) {
+                readTranscriptFile(files[0]);
+            } else if (type === 'pdf') {
+                files.forEach(file => addPdfFile(file));
+            }
+        }
+
+        function removeFile(type, index) {
+            if (type === 'pdf') {
+                appData.pdfFiles.splice(index, 1);
+            } else if (type === 'url') {
+                appData.urls.splice(index, 1);
+            }
+            renderFileList();
+            validateSources();
+        }
+
+        function renderFileList() {
+            const pdfContainer = document.getElementById('pdf-list');
+            pdfContainer.innerHTML = appData.pdfFiles.map((pdf, index) => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-icon pdf-icon">PDF</div>
+                        <div class="file-details">
+                            <div class="file-name">${pdf.name}</div>
+                            <div class="file-size">${pdf.size}${pdf.extractedText ? ' ✓ Text extracted' : ' ⚠ No text extracted'}</div>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFile('pdf', ${index})">Remove</button>
+                </div>
+            `).join('');
+
+            const urlContainer = document.getElementById('url-list');
+            urlContainer.innerHTML = appData.urls.map((url, index) => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-icon web-icon">WEB</div>
+                        <div class="file-details">
+                            <div class="file-name">${url.title}</div>
+                            <div class="file-size">${url.url}</div>
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeFile('url', ${index})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        // Utility functions
+        function getWordTarget(length) {
+            const targets = {
+                'short': '400-600',
+                'medium': '600-1000',
+                'long': '1000-1500'
+            };
+            return targets[length] || '600-1000';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function extractDomain(url) {
+            try {
+                return new URL(url).hostname.replace('www.', '');
+            } catch (_) {
+                return url;
+            }
+        }
+
+        function getUrlType(url) {
+            if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+            return 'web';
+        }
+
+        // Event listeners
+        document.getElementById('project-name').addEventListener('input', validateSources);
+        document.getElementById('transcript-input').addEventListener('input', validateSources);
+        document.getElementById('url-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addUrl();
+        });
+        document.getElementById('article-content').addEventListener('input', () => {
+            updateWordCount();
+            const hasContent = document.getElementById('article-content').value.trim().length > 0;
+            document.getElementById('export-ready-btn').disabled = !hasContent;
+        });
+
+        // Initialize PDF.js worker
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+            
+            // Set default custom prompt
+            document.getElementById('custom-prompt').value = 'Focus on innovation and business impact. Include specific examples and maintain professional tone throughout.';
+        });
+    </script>
+</body>
+</html>
